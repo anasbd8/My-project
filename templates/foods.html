@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>MacroPW – Livsmedel</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  </head>
+  <body>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg" data-bs-theme="dark">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="{{ url_for('dashboard.index') }}">MacroPW</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+          <div class="navbar-nav">
+            <a class="nav-link" href="{{ url_for('dashboard.index') }}">Start</a>
+            <a class="nav-link" href="{{ url_for('meals.meals') }}">Meal log</a>
+            <a class="nav-link" href="{{ url_for('workouts.add_workout') }}">Workouts</a>
+            <a class="nav-link" href="{{ url_for('statistics.statistics') }}">Statistics</a>
+          </div>
+          <div class="navbar-nav ms-auto">
+            <a class="nav-link" href="{{ url_for('profile.profile') }}">Profile</a>
+            <a class="nav-link" href="{{ url_for('auth.logout') }}">Log Out</a>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Huvudinnehåll -->
+    <div class="container mt-4">
+
+      <!-- Flashmeddelanden från servern -->
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      <a href="{{ url_for('meals.meals') }}" class="text-muted-soft back-link">← Back</a>
+
+      <!-- Rubrik och knapp för att lägga till livsmedel -->
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4 class="mb-0">All Foods</h4>
+        <button type="button" class="btn btn-blue" data-bs-toggle="modal" data-bs-target="#addFoodModal">
+          + Add food
+        </button>
+      </div>
+
+      <!-- Tabell med alla livsmedel från databasen -->
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Calories <small class="text-muted">/100g</small></th>
+            <th>Protein <small class="text-muted">/100g</small></th>
+            <th>Fat <small class="text-muted">/100g</small></th>
+            <th>Carbs <small class="text-muted">/100g</small></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for food in foods %}
+          <tr>
+            <td>{{ food[1].title() }}</td>
+            <td>{{ food[2] }}</td>
+            <td>{{ food[3] }}</td>
+            <td>{{ food[4] }}</td>
+            <td>{{ food[5] }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Modal för att lägga till nytt livsmedel -->
+    <div class="modal fade" id="addFoodModal" tabindex="-1" aria-labelledby="addFoodModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="addFoodModalLabel">Add Food</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <form method="POST" action="{{ url_for('foods.add_food') }}">
+              <div class="mb-3">
+                <label class="form-label">Name</label>
+                <input type="text" class="form-control" name="name" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Calories <small class="text-muted">/100g</small></label>
+                <input type="number" class="form-control" name="calories" min="1" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Protein <small class="text-muted">/100g</small></label>
+                <input type="number" step="0.1" class="form-control" name="protein" min="0" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Fat <small class="text-muted">/100g</small></label>
+                <input type="number" step="0.1" class="form-control" name="fat" min="0" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Carbs <small class="text-muted">/100g</small></label>
+                <input type="number" step="0.1" class="form-control" name="carbs" min="0" required>
+              </div>
+              <small class="form-text text-muted">Combined protein, fat and carbs cannot exceed 100g.</small>
+              <button type="submit" class="btn btn-blue w-100">Save</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+    <script src="{{ url_for('static', filename='common.js') }}"></script>
+
+  </body>
+</html>
